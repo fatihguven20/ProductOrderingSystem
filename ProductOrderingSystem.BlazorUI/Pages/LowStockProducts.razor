@@ -56,7 +56,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        products = await Http.GetFromJsonAsync<List<ProductDto>>("https://localhost:7076/products/low-stock");
+        products = await Http.GetFromJsonAsync<List<ProductDto>>("products/low-stock");
     }
 
     private async Task PlaceOrder()
