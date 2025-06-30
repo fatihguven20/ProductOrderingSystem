@@ -1,0 +1,82 @@
+﻿@page "/add-product"
+@using ProductOrderingSystem.Contracts
+@using ProductOrderingSystem.BlazorUI.Services
+@inject ProductService ProductService
+@inject NavigationManager NavigationManager
+
+<h3>Yeni Ürün Ekle</h3>
+
+@if (!isSuccess)
+{
+    <div class="form-group">
+        <label>Product Code:</label>
+        <input type="number" class="form-control" @bind="productCode" />
+
+        <button class="btn btn-secondary mt-1 mb-3" @onclick="FetchProductData">Ürün Bilgilerini Getir</button>
+
+        @if (productFetched)
+        {
+            <div>
+                <p><strong>Ürün İsmi:</strong> @product.title</p>
+                <img src="@product.image" width="100" />
+            </div>
+
+            <label>Başlangıç Stok Miktarı:</label>
+            <input type="number" class="form-control" @bind="product.stock" />
+
+            <label>Eşik Stok Miktarı:</label>
+            <input type="number" class="form-control" @bind="product.threshold" />
+
+            <button class="btn btn-primary mt-3" @onclick="SubmitProduct">Ürünü Ekle</button>
+        }
+        else if (fetchAttempted)
+        {
+            <div class="alert alert-warning mt-2">
+                Ürün bulunamadı.
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-success mt-3">
+        Ürün başarıyla eklendi!
+        <br />
+        <button class="btn btn-success mt-2" @onclick="GoToHome">Tamam</button>
+    </div>
+}
+
+@code {
+    private int productCode;
+    private ProductDto? product = new();
+    private bool isSuccess = false;
+    private bool productFetched = false;
+    private bool fetchAttempted = false;
+
+    private async Task FetchProductData()
+    {
+        product = await ProductService.GetProductByIdAsync(productCode);
+        fetchAttempted = true;
+
+        if (product is not null)
+        {
+            product.productCode = productCode;
+            productFetched = true;
+        }
+        else
+        {
+            product = new();
+        }
+    }
+
+    private async Task SubmitProduct()
+    {
+        await ProductService.AddProductAsync(product!);
+        isSuccess = true;
+    }
+
+    private void GoToHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

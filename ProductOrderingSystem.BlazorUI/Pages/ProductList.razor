@@ -1,0 +1,55 @@
+﻿@page "/product-list"
+@using ProductOrderingSystem.BlazorUI.Services
+@using ProductOrderingSystem.Contracts
+@inject ProductService ProductService
+
+<h3>Ürün Listesi</h3>
+
+@if (products.Count == 0)
+{
+    <p>Henüz ürün eklenmemiş.</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Görsel</th>
+                <th>Ürün Adı</th>
+                <th>Stok</th>
+                <th>Eşik Stok</th>
+                <th>Durum</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in products)
+            {
+                <tr class="@(product.stock < product.threshold ? "table-danger" : "")">
+                    <td><img src="@product.image" width="60" /></td>
+                    <td>@product.title</td>
+                    <td>@product.stock</td>
+                    <td>@product.threshold</td>
+                    <td>
+                        @if (product.stock < product.threshold)
+                        {
+                            <span class="text-danger fw-bold">Stok Az</span>
+                        }
+                        else
+                        {
+                            <span class="text-success">Yeterli</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<ProductDto> products = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await ProductService.GetProductsAsync();
+    }
+}

@@ -1,0 +1,46 @@
+﻿@page "/"
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+<h2 class="ml-1 mb-4">Ürün Yönetimi</h2>
+
+<div class="ml-1 d-flex flex-column gap-3" style="max-width: 300px;">
+    <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo("/add-product"))">Yeni Ürün Ekle</button>
+    <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo("/product-list"))">Tüm Ürünleri Listele</button>
+    <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo("/low-stock"))">Kritik Stok Ürünleri</button>
+    <button class="btn btn-primary" @onclick="ImportProducts">Ürünleri Import Et</button>
+</div>
+
+@if (!string.IsNullOrEmpty(importResult))
+{
+    <p style="margin-top: 30px; " class="ml-1 text-success">@importResult</p>
+}
+
+@code {
+    void NavigateTo(string url)
+    {
+        NavigationManager.NavigateTo(url);
+    }
+
+    private string importResult;
+
+    private async Task ImportProducts()
+    {
+        try
+        {
+            var response = await Http.PostAsync("https://localhost:7076/products/import", null);
+            if (response.IsSuccessStatusCode)
+            {
+                importResult = await response.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                importResult = $"Hata: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            importResult = $"Hata oluştu: {ex.Message}";
+        }
+    }
+}

@@ -1,0 +1,19 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+
+<div class="main-layout">
+    <div class="top-bar">
+        <button class="home-button" @onclick="GoHome">🏠</button>
+    </div>
+
+    <div class="body-content">
+        @Body
+    </div>
+</div>
+
+@code {
+    private void GoHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

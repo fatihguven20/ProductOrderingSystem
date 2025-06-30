@@ -1,0 +1,83 @@
+﻿@page "/low-stock"
+@using ProductOrderingSystem.BlazorUI.Services
+@using ProductOrderingSystem.Contracts
+@inject ProductService ProductService
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3>Kritik Stoktaki Ürünler</h3>
+
+@if (products == null)
+{
+    <p>Yükleniyor...</p>
+}
+else if (!products.Any())
+{
+    <p>Kritik stokta ürün bulunmamaktadır.</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Product Code</th>
+                <th>Ürün Adı</th>
+                <th>Mevcut Stok</th>
+                <th>Eşik Stok</th>
+                <th>Fiyat (₺)</th>
+                <th>Sipariş Adedi</th>
+                <th>Toplam Tutar (₺)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in products)
+            {
+                var toOrder = p.threshold - p.stock;
+                var cost = toOrder * p.price;
+
+                <tr>
+                    <td>@p.productCode</td>
+                    <td>@p.title</td>
+                    <td>@p.stock</td>
+                    <td>@p.threshold</td>
+                    <td>@p.price.ToString("0.00")</td>
+                    <td>@toOrder</td>
+                    <td>@cost.ToString("0.00")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button class="btn btn-success" @onclick="PlaceOrder">Siparişi Ver</button>
+}
+
+@code {
+    List<ProductDto> products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await Http.GetFromJsonAsync<List<ProductDto>>("https://localhost:7076/products/low-stock");
+    }
+
+    private async Task PlaceOrder()
+    {
+        var response = await Http.PostAsync("https://localhost:7076/orders/check-and-place", null);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await ShowAlert("Sipariş başarıyla oluşturuldu!");
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            await ShowAlert("Sipariş oluşturulurken bir hata oluştu!");
+        }
+    }
+
+    private async Task ShowAlert(string message)
+    {
+        await JS.InvokeVoidAsync("alert", message);
+    }
+
+    [Inject] IJSRuntime JS { get; set; }
+}
